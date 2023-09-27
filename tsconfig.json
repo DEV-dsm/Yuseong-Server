@@ -1,0 +1,23 @@
+{
+    "ts-node": {
+        "esm": true
+    },
+    "compilerOptions": {
+        "preserveValueImports": false,
+        "module": "Node16",
+        "target": "ES6",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "outDir": "scripts/",
+        "strict": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
+    ]
+}
