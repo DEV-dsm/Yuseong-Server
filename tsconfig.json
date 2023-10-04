@@ -5,7 +5,7 @@
     "compilerOptions": {
         "preserveValueImports": false,
         "module": "Node16",
-        "target": "ES6",
+        "target": "es2017",
         "noImplicitAny": false,
         "sourceMap": true,
         "outDir": "scripts/",
