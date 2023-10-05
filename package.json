@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "test",
-    "start": "start"
+    "start": "cd src && ts-node index.ts"
   },
   "repository": {
     "type": "git",

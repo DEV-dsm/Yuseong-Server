@@ -12,7 +12,7 @@ configDotenv();
 const app = express();
 const port = process.env.PORT || 8000;
 
-AppDataSource.initialize()
+await AppDataSource.initialize()
     .then(() => { console.log(`DB has initted`) })
     .catch((err) => { console.error(err) })
 
