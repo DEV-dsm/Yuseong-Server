@@ -7,44 +7,42 @@ import fs from "fs";
 
 const pdfParser = new Pdfparser();
 
+// 결과 보고서 분석 및 저장
 const registerResultReport = async (req, res) => {
     try {
-        const filename: string = req.file.originalname;
+        const filename: string = req.file.originalname; // 파일 이름 가져오기
 
-        pdfParser.on("pdfParser_dataError", errData => console.error(errData));
+        pdfParser.on("pdfParser_dataError", errData => console.error(errData)); // 예외 처리
         pdfParser.on("pdfParser_dataReady", pdfData => {
+            // pdf를 읽고 json으로 분석
             fs.writeFileSync(`result/${filename.split('.')[0]}.json`, JSON.stringify(pdfData));
         })
+    
+        pdfParser.loadPDF(`upload/${filename}`); // pdf 데이터 가져오기
 
-        pdfParser.loadPDF(`upload/${filename}`);
-
-        const file = await fs.readFileSync(`result/${filename.split('.')[0]}.json`).toString();
-        const data = await JSON.parse(file)
+        const file = fs.readFileSync(`result/${filename.split('.')[0]}.json`).toString(); // JSON 파일 읽고 String으로 전환
+        const data = await JSON.parse(file) // JSON 파싱
         // data.Pages[0].Texts[i].R[0].T
 
-        const pageLength = data.Pages.length
-        const datas: string[] = [];
-        const qwer: string[][] = [];
+        const info: string[][] = []; // 빈 배열 생성
 
-        for (let a = 0; a < pageLength; a++){
-            const textLength = data.Pages[a].Texts.length
-            qwer.push(data.Pages[a].Texts.map(x => decodeURIComponent(x.R[0].T)));
-            const thisData = data.Pages[a].Texts
-            for (let b = 0; b < textLength; b++) {
-                datas.push(decodeURIComponent(thisData[b].R[0].T));
-            }
-            datas.push('\n')
-            qwer.push(['\n'])
-        }
+        await data.map(element => { // 파싱한 데이터 디코딩해 배열에 넣기
+            info.push(element.Texts.map(text => decodeURIComponent(text.R[0].T)));
+            // decodeURI가 더 빠르지만 decodeURI에서는 디코딩하지 못하는 문자가 문서에 존재
+            info.push(['\n'])
+        })
 
-        const newarr: string = qwer.map(x => x.join(' ')).toString()
+        // 보기 편하게 배열 -> String
+        const knowledge: string = info.map(element => element.join(' ')).toString();
 
-        fs.writeFileSync(`result/${filename.split('.')[0]}.txt`, newarr)
+        // txt 파일 작성 (테스팅 결과 확인용)
+        fs.writeFileSync(`result/${filename.split('.')[0]}.txt`, knowledge)
 
         return res.status(201).json({
-            'qwer': newarr.split('\n')
+            'qwer': knowledge.split('\n')
         })
     } catch (err) {
+        // 에러처리
         console.error(err);
         return err;
     }
