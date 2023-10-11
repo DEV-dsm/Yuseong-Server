@@ -1,5 +1,5 @@
 
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryColumn } from "typeorm";
 import { Key } from "../enums/key.enum.js";
 import { ResultReport } from "./resultReport.entity.js";
 
@@ -10,7 +10,12 @@ export class BudgetResult {
     @PrimaryColumn()
     id!: number;
 
-    @ManyToOne(
+    @PrimaryColumn({
+        type: 'varchar'
+    })
+    key!: Key;
+
+    @ManyToMany(
         () => ResultReport,
         resultReport => resultReport.budgetResult
     )
@@ -26,9 +31,4 @@ export class BudgetResult {
         type: 'integer'
     })
     burden!: number;
-
-    @Column({
-        type: 'varchar'
-    })
-    key!: Key;
 }

@@ -47,6 +47,7 @@ export class PerformanceDetail {
     })
     etc!: number;
 
+    @PrimaryColumn()
     @Column({
         type: 'varchar'
     })

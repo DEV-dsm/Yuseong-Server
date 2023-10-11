@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Relation } from "typeorm";
+import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn, Relation } from "typeorm";
 import { BudgetResult } from "./budgetResult.entity.js";
 
 @Entity()
@@ -8,7 +8,7 @@ export class ResultReport {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @OneToMany(
+    @ManyToMany(
         () => BudgetResult,
         budgetResult => budgetResult.resultReport
     )
