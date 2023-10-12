@@ -2,9 +2,11 @@
 // // Texts의 모든 배열 요소 스캔
 // // R에는 배열 객체 1개만 존재
 
+// 라이브러리
 import Pdfparser from "pdf2json";
 import fs from "fs";
-import { Business } from "../models/business.entity.js";
+
+// DB
 import { AppDataSource } from "../models/dataSource.js";
 import { ResultReport } from "../models/resultReport.entity.js";
 import { BusinessType } from "../enums/businessType.enum.js";
@@ -13,7 +15,12 @@ import { PerformanceDetail } from "../models/performanceDetail.entity.js";
 import { Total } from "../enums/total.enum.js";
 import { BudgetResult } from "../models/budgetResult.entity.js";
 import { Key } from "../enums/key.enum.js";
+import { ChangeStatus } from "../models/changeStatus.entity.js";
+import { PushResult } from "../models/pushResult.entity.js";
+import { AchievementStatus } from "../models/achievementStatus.entity.js";
+import { UsingResource } from "../models/usingResource.entity.js";
 
+// 라이브러리 객체 생성
 const pdfParser = new Pdfparser();
 
 // businessRepository 사업신청서(게획서)
@@ -23,6 +30,10 @@ const resultReport = AppDataSource.getRepository(ResultReport);
 const budgetResult = AppDataSource.getRepository(BudgetResult);
 const performanceResult = AppDataSource.getRepository(PerformanceResult);
 const performanceDetail = AppDataSource.getRepository(PerformanceDetail);
+const changeStatus = AppDataSource.getRepository(ChangeStatus);
+const pushResult = AppDataSource.getRepository(PushResult);
+const achievementStatus = AppDataSource.getRepository(AchievementStatus);
+const usingResource = AppDataSource.getRepository(UsingResource);
 
 // 결과 보고서 분석 및 저장
 const registerResultReport = async (req, res) => {
@@ -43,32 +54,36 @@ const registerResultReport = async (req, res) => {
         const info: any[] = []; // 빈 배열 생성
 
         await data.map(element => { // 파싱한 데이터 디코딩해 배열에 넣기
-            info.push(element.Texts.map(text => decodeURIComponent(text.R[0].T)));
+            const list: string[] = [];
+            // 페이지 1개 = 배열 1개
+            element.Texts.map(text => {
+                let thisText = text.R[0].T.toString();
+                if (thisText.includes('%2C')) thisText = thisText.replaceAll('%2C', '');
+                list.push(decodeURIComponent(thisText));
+            });
+            // 모든 페이지 배열을 한데로 모음
+            info.push(list);
             // decodeURI가 더 빠르지만 decodeURI에서는 디코딩하지 못하는 문자가 문서에 존재
         })
 
         // 보기 편하게 배열 -> String
         const knowledge: string[] = [];
-        info.map(element => {
-            element.map(item => {
-                if (item.includes(',')){
-                    const index = element.findIndex(x => x === item)
-                    element[index] = item.replaceAll(',', '')
-                }
-            })
-            knowledge.push(element.toString().replaceAll(',', ' '))
-        })
+        for (const element in info) {
+            const thisE = info[element]
+            knowledge.push(thisE.toString().replaceAll(',', ' '));
+        }
 
         fs.writeFileSync(`/Users/xii/Desktop/Project/Yuseong-Server/src/result/${filename.split('.')[0]}.txt`, knowledge.join('\n'))
 
         // 1페이지의 내용 정리
         const resultPage1 = knowledge[0].split('○');
+        const thisDate = knowledge[0].split('자  부  담')[1].split(' 제출자')[0].split(' ').filter(x => x.length >= 1).map(x => Number(x))
 
         // 결과보고서 db 저장 1
         const result = await resultReport.save({
             clubName: resultPage1[2].split(': ')[1],
             businessName: resultPage1[3].split(': ')[1],
-            date: new Date().toISOString(),
+            date: new Date(thisDate[3], thisDate[5] - 1, thisDate[7]).toLocaleDateString(),
             leader: resultPage1[4].split('( 대표자 ): ')[1].replaceAll(' ( 서명 / 날인 )', '').replaceAll(' ', ''),
             writer: resultPage1[5].split('작 성 자 ')[1].replaceAll(' ( 서명 / 날인 )', '').replaceAll(' ', ''),
             phone: resultPage1[6].split('연 락 처 ')[1].replaceAll('  ', '-'),
@@ -80,10 +95,8 @@ const registerResultReport = async (req, res) => {
         const burden: number[] = [];
         knowledge[0].split('자  부  담')[1].split('   년')[0].split(' ').map(x => burden.push(Number(x)));
 
-        console.log(subsidy, burden)
-
         // 예산액
-        await budgetResult.save({
+        const budgetSum = await budgetResult.save({
             id: result.id,
             subsidy: subsidy[1],
             burden: burden[1],
@@ -91,7 +104,7 @@ const registerResultReport = async (req, res) => {
         })
 
         // 집행액
-        await budgetResult.save({
+        const execution = await budgetResult.save({
             id: result.id,
             subsidy: subsidy[2],
             burden: burden[2],
@@ -115,7 +128,7 @@ const registerResultReport = async (req, res) => {
         const location: string = knowledge[1].split('사업지역 ')[1].split('추 진 성 과')[0].replace('  ', ' ');
 
         // 저장
-        await performanceResult.save({
+        const performance = await performanceResult.save({
             id: result.id,
             businessType,
             period,
@@ -131,7 +144,7 @@ const registerResultReport = async (req, res) => {
             .map(x => resultPeople.push(Number(x)));
 
         // 총횟수 저장
-        await performanceDetail.save({
+        const totalNum = await performanceDetail.save({
             id: result.id,
             meeting: resultChance[0],
             education: resultChance[1],
@@ -142,7 +155,7 @@ const registerResultReport = async (req, res) => {
         })
 
         // 총인원 저장
-        await performanceDetail.save({
+        const totalPeople = await performanceDetail.save({
             id: result.id,
             meeting: resultPeople[0],
             education: resultPeople[1],
@@ -151,9 +164,41 @@ const registerResultReport = async (req, res) => {
             etc: resultPeople[4] || 0,
             total: Total.people
         })
-        
+
+        // 2페이지 - 사업변경현황
+        const resultPage2 = knowledge[1].split('변경내용 ')[1].split('사 업 추 진 결 과')[0]
+            .split(/([0-9]{2}\.[0-9]{2})/).filter(x => x.length >= 2);
+
+        let change: object[] = [];
+        for (let index = 0; index < resultPage2.length; index += 3){
+            const thisDate = new Date().toLocaleDateString(); // 현재 날짜 기준
+            // 신청일자
+            const appliedDate = thisDate.replaceAll(/\. [0-9]{2}\. [0-9]{2}/g, `.${resultPage2[index]}`);
+            // 승인일자
+            const approvalDate = thisDate.replaceAll(/\. [0-9]{2}\. [0-9]{2}/g, `.${resultPage2[index + 1]}`);
+
+            change.push(await changeStatus.save({
+                id: result.id,
+                appliedDate: appliedDate.toLocaleString(),
+                approvalDate: approvalDate.toLocaleString(),
+                changedContent: resultPage2[index + 2].trim(),
+            }))
+        }
+
         return res.status(201).json({
-            'data': knowledge
+            'data': {
+                result,
+                'budget' : {
+                    budgetSum,
+                    execution,
+                },
+                performance,
+                'total': {
+                    totalNum,
+                    totalPeople,
+                },
+                'changeStatus' : change,
+            }
         })
     } catch (err) {
         // 에러처리

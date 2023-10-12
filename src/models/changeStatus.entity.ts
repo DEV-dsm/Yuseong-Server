@@ -8,15 +8,15 @@ export class ChangeStatus {
     @PrimaryColumn()
     id!: number;
 
-    @Column({
-        type: 'date'
+    @PrimaryColumn({
+        type: 'varchar'
     })
-    appliedDate!: Date;
+    appliedDate!: string;
 
-    @Column({
-        type: 'date'
+    @PrimaryColumn({
+        type: 'varchar'
     })
-    approvalDate!: Date;
+    approvalDate!: string;
 
     @Column({
         type: 'varchar'
