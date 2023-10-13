@@ -8,11 +8,11 @@ const router = express();
 const upload = multer({
     storage: multer.diskStorage({
         filename(req, file, done) {
-            console.log(file)
+            // console.log(file)
             done(null, file.originalname);
         },
         destination(req, file, done) {
-            console.log(file)
+            // console.log(file)
             done(null, 'upload');
         },
     }),

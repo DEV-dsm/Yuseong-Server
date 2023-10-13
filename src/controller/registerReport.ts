@@ -1,7 +1,3 @@
-// // Pages[].Texts[].R[0].T => decodeURI
-// // Texts의 모든 배열 요소 스캔
-// // R에는 배열 객체 1개만 존재
-
 // 라이브러리
 import Pdfparser from "pdf2json";
 import fs from "fs";
@@ -69,8 +65,7 @@ const registerResultReport = async (req, res) => {
         // 보기 편하게 배열 -> String
         const knowledge: string[] = [];
         for (const element in info) {
-            const thisE = info[element]
-            knowledge.push(thisE.toString().replaceAll(',', ' '));
+            knowledge.push(info[element].toString().replaceAll(',', ' '));
         }
 
         fs.writeFileSync(`/Users/xii/Desktop/Project/Yuseong-Server/src/result/${filename.split('.')[0]}.txt`, knowledge.join('\n'))
@@ -91,24 +86,27 @@ const registerResultReport = async (req, res) => {
 
         // 보조금, 자부담
         const subsidy: number[] = []
-        knowledge[0].split('보  조  금')[1].split('자  부  담')[0].split(' ').map(x => subsidy.push(Number(x)));
+        knowledge[2].split('보조금')[1].split('자부담')[0].split(' 원 ').filter(x => !x.includes('%')).map(x => subsidy.push(Number(x)));
         const burden: number[] = [];
-        knowledge[0].split('자  부  담')[1].split('   년')[0].split(' ').map(x => burden.push(Number(x)));
+        knowledge[2].split('자부담')[1].split('합계')[0].split(' 원 ').filter(x => !x.includes('%')).map(x => burden.push(Number(x)));
+        const interestAccrued = Number(knowledge[2].split('( 환수  금액임 )')[1].replace('원', '').replaceAll(' ', '').trim());
 
         // 예산액
         const budgetSum = await budgetResult.save({
-            id: result.id,
-            subsidy: subsidy[1],
-            burden: burden[1],
-            key: Key.budgetSum
+            reportId: result.id,
+            key: Key.budgetSum,
+            subsidy: subsidy[0],
+            burden: burden[0],
+            interestAccrued,
         })
 
         // 집행액
         const execution = await budgetResult.save({
-            id: result.id,
-            subsidy: subsidy[2],
-            burden: burden[2],
-            key: Key.execution
+            reportId: result.id,
+            key: Key.execution,
+            subsidy: subsidy[1],
+            burden: burden[1],
+            interestAccrued,
         })
 
         // 사업종류 구분
@@ -145,7 +143,7 @@ const registerResultReport = async (req, res) => {
 
         // 총횟수 저장
         const totalNum = await performanceDetail.save({
-            id: result.id,
+            reportId: result.id,
             meeting: resultChance[0],
             education: resultChance[1],
             workshop: resultChance[2],
@@ -156,7 +154,7 @@ const registerResultReport = async (req, res) => {
 
         // 총인원 저장
         const totalPeople = await performanceDetail.save({
-            id: result.id,
+            reportId: result.id,
             meeting: resultPeople[0],
             education: resultPeople[1],
             workshop: resultPeople[2],
