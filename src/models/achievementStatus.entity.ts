@@ -20,17 +20,17 @@ export class AchievementStatus {
     @Column({
         type: 'varchar'
     })
-    changedMember!: Relation<Amount>;
+    changedMember!: Amount;
 
     @Column({
         type: 'varchar'
     })
-    increaseMain!: Relation<Amount>;
+    increaseMain!: Amount;
 
     @Column({
         type: 'varchar'
     })
-    increaseNew!: Relation<Amount>;
+    increaseNew!: Amount;
 
     @Column({
         type: 'varchar'

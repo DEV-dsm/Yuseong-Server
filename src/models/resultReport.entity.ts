@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn, Relation } from "typeorm";
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn, Relation } from "typeorm";
 import { BudgetResult } from "./budgetResult.entity.js";
 
 @Entity()

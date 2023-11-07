@@ -1,19 +1,24 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, Relation } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn, Relation } from "typeorm";
 import { PerformanceResult } from "./performanceResult.entity.js";
 
 @Entity()
 export class ChangeStatus {
     // 사업 변경 현황
 
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id!: number;
 
     @PrimaryColumn({
+        type: 'integer'
+    })
+    reportId!: number;
+
+    @Column({
         type: 'varchar'
     })
     appliedDate!: string;
 
-    @PrimaryColumn({
+    @Column({
         type: 'varchar'
     })
     approvalDate!: string;
@@ -27,6 +32,6 @@ export class ChangeStatus {
         () => PerformanceResult,
         performanceResult => performanceResult.changeStatus
     )
-    @JoinColumn({ name: 'id' })
+    @JoinColumn({ name: 'reportId' })
     performanceResult!: Relation<PerformanceResult>;
 }

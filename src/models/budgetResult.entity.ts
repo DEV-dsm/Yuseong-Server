@@ -1,5 +1,5 @@
 
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { Key } from "../enums/key.enum.js";
 import { ResultReport } from "./resultReport.entity.js";
 
@@ -27,7 +27,7 @@ export class BudgetResult {
         () => ResultReport,
         resultReport => resultReport.budgetResult
     )
-    @JoinColumn({ name: 'id' })
+    @JoinColumn({ name: 'reportId' })
     resultReport!: ResultReport;
 
     // 보조금

@@ -1,0 +1,48 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm";
+import { BusinessInformation } from "./businessInformation.entity.js";
+let RegularyMeeting = class RegularyMeeting {
+};
+__decorate([
+    PrimaryColumn({
+        type: 'integer'
+    }),
+    __metadata("design:type", Number)
+], RegularyMeeting.prototype, "id", void 0);
+__decorate([
+    OneToOne(() => BusinessInformation, businessInformation => businessInformation.regularyMeeting),
+    JoinColumn({ name: 'id' }),
+    __metadata("design:type", Object)
+], RegularyMeeting.prototype, "businessInformation", void 0);
+__decorate([
+    Column({
+        type: 'varchar'
+    }),
+    __metadata("design:type", String)
+], RegularyMeeting.prototype, "type", void 0);
+__decorate([
+    Column({
+        type: 'varchar'
+    }),
+    __metadata("design:type", String)
+], RegularyMeeting.prototype, "frequency", void 0);
+__decorate([
+    Column({
+        type: 'integer',
+        default: false
+    }),
+    __metadata("design:type", Number)
+], RegularyMeeting.prototype, "participants", void 0);
+RegularyMeeting = __decorate([
+    Entity()
+], RegularyMeeting);
+export { RegularyMeeting };
+//# sourceMappingURL=regularyMeeting.entity.js.map
