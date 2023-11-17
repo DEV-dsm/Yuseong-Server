@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from "multer";
 
-import * as register from '../controller/registerReport.js'
+import * as register from '../controller/registerReport.refactor.js'
 
 const router = express();
 

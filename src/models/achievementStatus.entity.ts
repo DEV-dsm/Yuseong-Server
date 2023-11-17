@@ -35,5 +35,5 @@ export class AchievementStatus {
     @Column({
         type: 'varchar'
     })
-    changedRelation!: Relation<Related>;
+    changedRelation!: Related;
 }
