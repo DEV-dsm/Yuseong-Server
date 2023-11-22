@@ -85,8 +85,10 @@ const registerResultReport = async (req, res) => {
          *    - 작성자 writer
          *    - 연락처 phone
          */
-        const cover = page[0]
-        const page1 = page[1]
+
+        const cover: string = page!.shift()
+            ?? '■ □ 사  업  명  :  ○ 자  부  담  제출자  ( 대표자 ):  ( 서명 / 날인 ) 작 성 자  ( 서명 / 날인 ) 연 락 처'
+        const page1 = page.join(' ')
 
         const clubName: string = cover.split('■')[1].split('□')[0].replaceAll(' ', '')
         const businessName: string = cover.split('사  업  명  : ')[1].split(' ○')[0]
@@ -133,7 +135,7 @@ const registerResultReport = async (req, res) => {
         /**
          * 보조금 이자 발생액 (환수금액)
          */
-        const interestAccrued: number = page[2]
+        const interestAccrued: number = page1
             .split('( 환수  금액임 )')[1]
             .split(' ')
             .filter(x => x.match(/^\d?.*$/))
@@ -178,27 +180,63 @@ const registerResultReport = async (req, res) => {
             location
         })
 
+        /** */
+        const totalChance: number[] = page1.split('총회수 ')[1].split('총인원 ')[0].split('회').map(x => Number(x.replaceAll(' ', '')))
+        const totalPeople: number[] = page1.split('총인원 ')[1].split('사 업 변 경 현 황')[0].split('명').map(x => Number(x.replaceAll(' ', '')))
+
+        /** 추진성과(회의) */
+        const meeting: number[] = [
+            totalChance[0],
+            totalPeople[0]
+        ]
+        /** 추진성과(교육) */
+        const education: number[] = [
+            totalChance[1],
+            totalPeople[1]
+        ]
+        /** 추진성과(워크숍) */
+        const workshop: number[] = [
+            totalChance[2],
+            totalPeople[2]
+        ]
+        /** 추진성과(행사) */
+        const festival: number[] = [
+            totalChance[3],
+            totalPeople[3]
+        ]
+        /** 추진성과(기타) */
+        const etc: number[] = [
+            totalChance[4],
+            totalPeople[4]
+        ].map(x => {
+            if (!x) return 0
+            else return x
+        })
+
         /** 분야별 활동 총 횟수 */
         const performDetailTotalChance = await performanceDetail.save({
             reportId: id,
-            meeting: 0,
-            education: 0,
-            workshop: 0,
-            festival: 0,
-            etc: 0,
+            meeting: meeting[0],
+            education: education[0],
+            workshop: workshop[0],
+            festival: festival[0],
+            etc: etc[0],
             total: Total.num
         })
 
         /** 분야별 활동 총 인원 */
         const performDetailTotalPeople = await performanceDetail.save({
             reportId: id,
-            meeting: 0,
-            education: 0,
-            workshop: 0,
-            festival: 0,
-            etc: 0,
+            meeting: meeting[1],
+            education: education[1],
+            workshop: workshop[1],
+            festival: festival[1],
+            etc: etc[1],
             total: Total.people
         })
+
+
+        // 꼭 고칠 부분 ( ~ 260 )
 
         const listOfString: string[] = page1
             .split('변경내용 ')[1].split('사 업 추 진 결 과')[0]
@@ -206,7 +244,7 @@ const registerResultReport = async (req, res) => {
             .filter(x => x.length >= 2)
             
         const changeStatuses: ChangeStatus[] = [];
-        
+
         for (let i = 0, j = listOfString.length; i < j; i+= 3){
             changeStatuses.push(await changeStatus.save({
                 reportId: id,
@@ -216,10 +254,27 @@ const registerResultReport = async (req, res) => {
             }))
         }
 
-        const changedMember: Amount = Amount.increase
-        const increaseMain: Amount = Amount.decrease
-        const increaseNew: Amount = Amount.decrease
-        const changedRelation: Related = Related.normal
+        const enums = page1.split('변화결과 모임  구성원  수  ')[1].split('2)  지역자원')[0]
+        const changedMemberIf = enums.split('변화 감소')[1].split('핵심  주체')[0].replaceAll(' ', '').split('(⌵)')[0]
+        const increaseMainIf = enums.split('주민 )  증가 ')[1].split(' 새롭게')[0].replaceAll(' ', '').split('(⌵)')[0]
+        const increaseNewIf = enums.split('주민의  증가 ')[1].split(' 행정과의')[0].replaceAll(' ', '').split('(⌵)')[0]
+        const changedRelationIf = enums.split('관계  변화')[1].replaceAll(' ', '').split('⌵')[0]
+
+        const changedMember: Amount
+            = changedMemberIf.includes('증가') ? Amount.increase
+                : changedMemberIf.includes('변화없음') ? Amount.nothing : Amount.decrease
+        const increaseMain: Amount
+            = increaseMainIf.includes('증가') ? Amount.increase
+                : increaseMainIf.includes('변화없음') ? Amount.nothing : Amount.decrease
+        const increaseNew: Amount
+            = increaseNewIf.includes('증가') ? Amount.increase
+                : increaseNewIf.includes('변화없음') ? Amount.nothing : Amount.decrease
+        const changedRelation: Related
+            = changedRelationIf.includes('매우 그렇다') ? Related.veryTrue
+                : changedRelationIf.includes('그렇다') ? Related.yes
+                : changedRelationIf.includes('보통  이다') ? Related.normal
+                : changedRelationIf.includes('그렇지  않다') ? Related.not
+                : Related.veryDislike
 
         const achievementStatuses: AchievementStatus
             = await achievementStatus.save({
@@ -230,9 +285,18 @@ const registerResultReport = async (req, res) => {
                 changedRelation
         })
 
-        const evaluation: string = ''
-        const changedAfter: string = ''
+        /** 지역자원 활용 및 연계내용 */
+
+        /** 함께하는 주민모임 또는 단체 내용 */
+        const evaluation: string = page1.split('지역자원  활용  및  연계내용')[1].split('3)')[0]
+        /** 공모사업 후 달라진 점 (보람된 / 알리고 싶은 일) */
+        const changedAfter: string = page1.split('공모사업  후  달라진  점')[1].split('4)')[0]
+
+        // 현재 pdf2json 라이브러리 기술 상의 이유로 문단 순서가 바뀌어서 전달됨에 따라 OCR 라이브러리로 교체 예정
+
+        /** 어려운 혹은 제안하고 싶은 점 */
         const difficultOrSuggest: string = ''
+        /** 앞으로 계획 */
         const nextPlan: string = ''
 
         const usingResources: UsingResource
