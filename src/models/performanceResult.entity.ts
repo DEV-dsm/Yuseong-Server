@@ -50,16 +50,6 @@ export class PerformanceResult {
     @Column({
         type: 'varchar'
     })
-    businessName!: string;
-
-    @Column({
-        type: 'varchar'
-    })
-    clubName!: string;
-
-    @Column({
-        type: 'varchar'
-    })
     period!: string;
 
     @Column({

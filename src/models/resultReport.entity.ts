@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Relation } from "typeorm";
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn, Relation } from "typeorm";
 import { BudgetResult } from "./budgetResult.entity.js";
 
 @Entity()
@@ -8,38 +8,43 @@ export class ResultReport {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @OneToMany(
+    @ManyToMany(
         () => BudgetResult,
         budgetResult => budgetResult.resultReport
     )
     budgetResult!: Relation<BudgetResult>[];
 
-
+    // 공동체명
     @Column({
         type: 'varchar'
     })
     clubName!: string;
 
+    // 사업명
     @Column({
         type: 'varchar'
     })
     businessName!: string;
 
+    // 작성일
     @Column({
-        type: 'date'
+        type: 'varchar'
     })
-    date!: Date;
+    date!: string;
 
+    // 대표자
     @Column({
         type: 'varchar'
     })
     leader!: string;
 
+    // 작성자
     @Column({
         type: 'varchar'
     })
     writer!: string;
 
+    // 연락처
     @Column({
         type: 'varchar'
     })

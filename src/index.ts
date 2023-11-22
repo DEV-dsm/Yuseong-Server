@@ -22,7 +22,9 @@ app.use(cors({
     credentials: true
 }))
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true }))
+app.use(express.static(`${process.env.PATH!}/upload`));
+//path.join(process.env.PATH!, 'upload')
 app.use('/', router);
 
 app.listen(process.env.PORT, () => {

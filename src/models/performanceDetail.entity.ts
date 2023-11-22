@@ -1,5 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, Relation } from "typeorm";
-import { Key } from "../enums/key.enum.js";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Relation } from "typeorm";
 import { Total } from "../enums/total.enum.js";
 import { PerformanceResult } from "./performanceResult.entity.js";
 
@@ -7,14 +6,19 @@ import { PerformanceResult } from "./performanceResult.entity.js";
 export class PerformanceDetail {
     // 추진 성과 상세
 
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id!: number;
+
+    @Column({
+        type: 'integer'
+    })
+    reportId!: number;
 
     @ManyToOne(
         () => PerformanceResult,
         performanceResult => performanceResult.performanceDetail
     )
-    @JoinColumn({ name: 'id' })
+    @JoinColumn({ name: 'reportId' })
     performanceResult!: Relation<PerformanceResult>;
 
     @Column({

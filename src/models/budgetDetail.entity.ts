@@ -1,5 +1,5 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { BusinessPlan } from "./businessPlan.entity.js";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Relation } from "typeorm";
 
 @Entity()
 export class BudgetDetail {
@@ -13,7 +13,7 @@ export class BudgetDetail {
         businessPlan => businessPlan.budgetDetail
     )
     @JoinColumn({ name: 'id' })
-    businessPlan!: BusinessPlan;
+    businessPlan!: Relation<BusinessPlan>;
     
     @Column({
         type: 'varchar'
