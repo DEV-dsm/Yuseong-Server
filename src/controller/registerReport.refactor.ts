@@ -1,7 +1,3 @@
-// 라이브러리
-import Pdfparser from "pdf2json";
-import fs from "fs";
-
 // DB
 import { AppDataSource } from "../models/dataSource.js";
 import { ResultReport } from "../models/resultReport.entity.js";
@@ -18,9 +14,8 @@ import { UsingResource } from "../models/usingResource.entity.js";
 import { Amount } from "../enums/amount.enum.js"
 import { Related } from "../enums/related.enum.js";
 import { BudgetRes, PerformanceDetailRes, PerformanceRes, RegisterReportRes } from "../dto/response.dto.js";
-
-// 라이브러리 객체 생성
-const pdfParser = new Pdfparser();
+import { pdf2json } from "../middleware/pdf2json.js";
+import { Request, Response } from "express";
 
 // resultRepository 결과보고서
 const resultReport = AppDataSource.getRepository(ResultReport);
@@ -33,45 +28,9 @@ const achievementStatus = AppDataSource.getRepository(AchievementStatus);
 const usingResource = AppDataSource.getRepository(UsingResource);
 
 // 결과 보고서 분석 및 저장
-const registerResultReport = async (req, res) => {
+export const registerResultReport = async (req: Request, res: Response): Promise<RegisterReportRes | unknown> => {
     try {
-        /**
-         * 결과 보고서 파일의 이름
-         */
-        const filename: string = req.file.originalname;
-
-        pdfParser.on("pdfParser_dataError", errData => console.error(errData)); // 예외 처리
-        pdfParser.on("pdfParser_dataReady", pdfData => {
-            // pdf를 읽고 json으로 분석
-            fs.writeFileSync(`result/${filename.split('.')[0]}.json`, JSON.stringify(pdfData));
-        })
-    
-        pdfParser.loadPDF(`upload/${filename}`); // pdf 데이터 가져오기
-
-        /**
-         * JSON 파일을 읽고 String으로 변환하여 저장
-         */
-        const fileContentsToString = fs.readFileSync(`result/${filename.split('.')[0]}.json`).toString();
-
-        /**
-         * JSON -> String으로 변환된 데이터를 파싱해 Pages 요소의 값을 저장
-         */
-        const data = await JSON.parse(fileContentsToString).Pages // JSON 파싱
-        
-        // 각 배열의 요소는 페이지
-        // ex) 표지 = page[0]
-        // ex) 1페이지 = page[1]
-        /**
-         * page 변수 : string 배열
-         * 
-         * 각 페이지에 있는 텍스트를 모두 모아 띄어쓰기를 구분자로 하여 저장
-         */
-        const page: string[] = await data.map(element => 
-            element.Texts.map(
-                text => decodeURIComponent(
-                    text.R[0].T.toString().replaceAll('%2C', '')
-                )).join(' ')
-        )
+        const page = await pdf2json(req);
 
         // 1페이지 내용 정리
         /**
@@ -331,13 +290,9 @@ const registerResultReport = async (req, res) => {
             "statusCode" : 201,
             "statusMsg" : 'Created'
         })
-    } catch (err) {
+    } catch (err : unknown) {
         // 에러처리
         console.error(err);
         return err;
     }
-}
-
-export {
-    registerResultReport,
 }
