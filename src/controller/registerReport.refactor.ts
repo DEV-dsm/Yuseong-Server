@@ -51,6 +51,7 @@ export const registerResultReport = async (req: Request, res: Response): Promise
 
         const clubName: string = cover.split('■')[1].split('□')[0].replaceAll(' ', '')
         const businessName: string = cover.split('사  업  명  : ')[1].split(' ○')[0]
+
         const date: string[] = cover.split('자  부  담 ')[1].split(' 제출자')[0].split(' ').filter(x => x.match(/^[0-9].*$/g))
         const leader: string = cover.split('( 대표자 ):')[1].split('( 서명 / 날인 )')[0].replaceAll(' ', '');
         const writer: string = cover.split('작 성 자 ')[1].split(' ( 서명 / 날인 )')[0].replaceAll(' ', '');
@@ -59,7 +60,7 @@ export const registerResultReport = async (req: Request, res: Response): Promise
         /**
          * 표지 내용 정리 (사업비 제외)
          */
-        const page1Result = await resultReport.save({
+        const page1Result: ResultReport = await resultReport.save({
             clubName,
             businessName,
             date: `${date[3]}-${date[4]}-${date[5]}`, // yyyy-mm-dd 형식
@@ -132,7 +133,7 @@ export const registerResultReport = async (req: Request, res: Response): Promise
         const location: string = page1.split('사업지역 ')[1].split('추 진 성 과')[0].replaceAll('  ', ' ');
 
         /** 활동 결과 */
-        const performResult = await performanceResult.save({
+        const performResult: PerformanceResult = await performanceResult.save({
             id,
             businessType,
             period,
@@ -173,7 +174,7 @@ export const registerResultReport = async (req: Request, res: Response): Promise
         })
 
         /** 분야별 활동 총 횟수 */
-        const performDetailTotalChance = await performanceDetail.save({
+        const performDetailTotalChance: PerformanceDetail = await performanceDetail.save({
             reportId: id,
             meeting: meeting[0],
             education: education[0],
@@ -184,7 +185,7 @@ export const registerResultReport = async (req: Request, res: Response): Promise
         })
 
         /** 분야별 활동 총 인원 */
-        const performDetailTotalPeople = await performanceDetail.save({
+        const performDetailTotalPeople: PerformanceDetail = await performanceDetail.save({
             reportId: id,
             meeting: meeting[1],
             education: education[1],
@@ -265,25 +266,25 @@ export const registerResultReport = async (req: Request, res: Response): Promise
                 changedAfter,
                 difficultOrSuggest,
                 nextPlan
-        })
+            })
 
-        const reportResult = new RegisterReportRes(
-            page1Result,
-            new BudgetRes(
+        const reportResult: RegisterReportRes = {
+            result: page1Result,
+            budget: {
                 budgetSum,
                 execution
-            ),
-            new PerformanceRes(
-                performResult,
-                new PerformanceDetailRes(
-                    performDetailTotalChance,
-                    performDetailTotalPeople
-                )
-            ),
-            changeStatuses,
-            achievementStatuses,
-            usingResources
-        )
+            },
+            performance: {
+                result: performResult,
+                detail: {
+                    totalChance: performDetailTotalChance,
+                    totalPeople: performDetailTotalPeople
+                }
+            },
+            changeStatus: changeStatuses,
+            achievementStatus: achievementStatuses,
+            usingResource: usingResources
+        }
 
         return res.status(201).json({
             "data": reportResult,

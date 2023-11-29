@@ -11,36 +11,28 @@ import { PerformanceResult } from "../models/performanceResult.entity.js"
 import { ResultReport } from "../models/resultReport.entity.js"
 import { UsingResource } from "../models/usingResource.entity.js"
 
-export class RegisterReportRes {
-    constructor(
-        result: ResultReport,
-        budget: BudgetRes,
-        performance: PerformanceRes,
-        changeStatus: ChangeStatus[],
-        achievementStatus: AchievementStatus,
-        usingResource: UsingResource
-    ) { }
+export type RegisterReportRes = {
+    result: ResultReport,
+    budget: BudgetRes,
+    performance: PerformanceRes,
+    changeStatus: ChangeStatus[],
+    achievementStatus: AchievementStatus,
+    usingResource: UsingResource
 }
 
-export class BudgetRes {
-    constructor(
-        budgetSum: BudgetResult,
-        execution: BudgetResult
-    ) { }
+export type BudgetRes = {
+    budgetSum: BudgetResult,
+    execution: BudgetResult
 }
 
-export class PerformanceRes {
-    constructor(
+export type PerformanceRes = {
         result: PerformanceResult,
         detail: PerformanceDetailRes
-    ) { }
 }
 
-export class PerformanceDetailRes{
-    constructor(
-        totalChance: PerformanceDetail,
-        totalPeople: PerformanceDetail
-    ) {}
+export type PerformanceDetailRes = {
+    totalChance: PerformanceDetail,
+    totalPeople: PerformanceDetail
 }
 
 export class RegisterBusinessPlan {
