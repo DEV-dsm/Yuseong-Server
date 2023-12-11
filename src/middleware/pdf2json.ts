@@ -28,10 +28,9 @@ export const pdf2json = async (req) => {
     const data = await JSON.parse(fileContentsToString).Pages // JSON 파싱
     const write: string = await data.map(e => {
         e.Texts.map(
-            t => decodeURIComponent(
-                        t.R[0].T.toString().replaceAll('%2C', '')
-                    )
-                ).join(' ')
+            t => {
+                t = decodeURIComponent(t.R[0].T.toString().replaceAll('%2C', ''))
+            }).join(' ')
         }).join('\n')
     fs.writeFileSync(`result/${filename.split('.')[0]}.txt`, write);
 

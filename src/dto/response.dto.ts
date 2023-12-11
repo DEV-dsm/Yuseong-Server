@@ -35,7 +35,6 @@ export type PerformanceDetailRes = {
     totalPeople: PerformanceDetail
 }
 
-export class RegisterBusinessPlan {
-    constructor(
-    ) { }
+export type RegisterPlanRes = {
+    
 }
