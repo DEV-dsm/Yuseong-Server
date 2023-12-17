@@ -46,3 +46,19 @@ export const enterprisePlan = async (req, res: Response) /*: Promise<RegisterPla
         return err;
     }
 }
+
+export const enterprisePlanP2J = async (req: Request, res: Response) => {
+    try {
+        const page = await pdf2json(req);
+        console.log(page)
+
+        return res.status(201).json({
+            "data": "",
+            "statusCode": 201,
+            "statusMsg": "Created"
+        })
+    } catch (err) {
+        console.error(err)
+        return err
+    }
+}

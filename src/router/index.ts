@@ -2,7 +2,7 @@ import express from 'express';
 import multer from "multer";
 
 import { registerResultReport } from '../controller/registerReport.refactor.js'
-import { enterprisePlan } from '../controller/registerApply.js'
+import { enterprisePlan, enterprisePlanP2J } from '../controller/registerApply.js'
 
 const router = express();
 
@@ -20,6 +20,7 @@ const upload = multer({
 })
 
 router.post('/register/report', upload.single('filename'), registerResultReport);
-router.post('/register/apply', upload.single('filename'), enterprisePlan);
+router.post('/register/apply/buf', upload.single('filename'), enterprisePlan);
+router.post('/register/apply', upload.single('filename'), enterprisePlanP2J)
 
 export default router;

@@ -45,7 +45,7 @@ export const registerResultReport = async (req: Request, res: Response): Promise
          *    - 연락처 phone
          */
 
-        const cover: string = page!.shift()
+        const cover: string = page.shift()
             ?? '■ □ 사  업  명  :  ○ 자  부  담  제출자  ( 대표자 ):  ( 서명 / 날인 ) 작 성 자  ( 서명 / 날인 ) 연 락 처'
         const page1 = page.join(' ')
 

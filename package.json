@@ -25,8 +25,12 @@
     "fflate": "^0.8.1",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.6.1",
+    "pdf-lib": "^1.17.1",
     "pdf2json": "^3.0.4",
-    "typeorm": "^0.3.17"
+    "pdfjs": "^2.5.2",
+    "pdfjs-dist": "^4.0.269",
+    "typeorm": "^0.3.17",
+    "zlib": "^1.0.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.15",
